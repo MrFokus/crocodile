@@ -1,0 +1,11 @@
+{
+  "Message": {
+    "description": "Auto imported from components/message.vue"
+  },
+  "SettingsGameMode": {
+    "description": "Auto imported from components/settings-game/GameMode.vue"
+  },
+  "SettingsGameJoiningLobby": {
+    "description": "Auto imported from components/settings-game/JoiningLobby.vue"
+  }
+}
