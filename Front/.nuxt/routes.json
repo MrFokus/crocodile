@@ -3,21 +3,18 @@
     "name": "settings-game",
     "path": "/settings-game",
     "component": "/Users/german/Desktop/crocodile/Front/pages/settings-game.vue",
-    "chunkName": "pages/settings-game",
-    "_name": "_44129002"
+    "chunkName": "pages/settings-game"
   },
   {
     "name": "lobby-id",
     "path": "/lobby/:id?",
     "component": "/Users/german/Desktop/crocodile/Front/pages/lobby/_id.vue",
-    "chunkName": "pages/lobby/_id",
-    "_name": "_1b2bed27"
+    "chunkName": "pages/lobby/_id"
   },
   {
     "name": "index",
     "path": "/",
     "component": "/Users/german/Desktop/crocodile/Front/pages/index.vue",
-    "chunkName": "pages/index",
-    "_name": "_336d2c78"
+    "chunkName": "pages/index"
   }
 ]

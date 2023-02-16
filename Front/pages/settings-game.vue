@@ -7,6 +7,7 @@
       <GameMode @getDiff="selectDiff"/>
       <p>Введите количество команд </p>
       <input pattern="[a-zA-Z]*"  class="team" @input="check" v-model="teams" type="text"> <br>
+      <p v-if="error" style="color: #ff5631">{{error}}</p>
       <button @click="getParams" class="create-lobby">Создать лобби</button>
       <button @click="isModal=true" class="create-lobby joining-lobby">Присоединиться к лобби</button>
 
@@ -25,6 +26,7 @@ export default {
       teams:"",
       name:null,
       difficulty: null,
+      error:null
     }
   },
   components: {
@@ -33,21 +35,35 @@ export default {
   },
   methods:{
     selectDiff(dif){
+      dif++
       this.difficulty=dif;
     },
     check(){
       if(+this.teams>=10){
         this.teams=10
-      }else if(+this.teams<0) {
+      }else if(+this.teams<0||this.teams==='0') {
         this.teams = 1
-      }else if(/^[a-zA-Z]+$/.test(this.teams)){
+      }else if(!/^\d+$/.test(this.teams)){
         this.teams=null;
       }
     },
 
     getParams(){
+      console.log(this.name)
+      if(this.name===''||this.name===null){
+        this.error='Введите имя'
+        return;
+      }else if(this.teams===''||this.teams===null){
+        this.error='Введите количество команд'
+        return;
+      }else if(this.difficulty===null){
+        this.error='Выберите сложность'
+        return;
+      }else {
+        this.error=undefined
+      }
       let params={
-        name:this.name,
+        name:this.name.trim(),
         teams:this.teams,
         difficulty:this.difficulty,
       };
@@ -74,6 +90,13 @@ input{
   height: 8.97vw;
   border: none;
   border-radius: 10vw;
+  font-family: 'Arial Black',serif;
+  font-style: normal;
+  font-weight: 900;
+  font-size: 4vw;
+  padding-left:2vw ;
+  padding-right:2vw ;
+  box-sizing: border-box;
 }
 p:nth-child(1){
   margin-top: 20vw;
@@ -86,8 +109,7 @@ p{
   font-family: 'Arial Black',serif;
   font-style: normal;
   font-weight: 900;
-  font-size: 20px;
-  line-height: 28px;
+  font-size: 5vw;
   display: flex;
   align-items: center;
   width: 65.64vw;
@@ -101,21 +123,21 @@ p{
 }
 .team{
   margin-top: 7.2vw;
-  margin-bottom: 13.84vw;
 }
 .create-lobby{
   text-shadow: 0.5px 0.5px 0.5px #5B5B5B;
   width: 65.128vw;
   height: 15.64vw;
   background: #009F10;
-  border-radius: 50px;
+  border-radius: 20vw;
   border: none;
   font-family: 'Arial Black',sans-serif;
   font-weight: 900;
-  font-size: 20px;
+  font-size: 5vw;
   text-align: center;
   color: #FFFFFF;
   text-decoration: none;
+  margin-top: 13.84vw;
 }
   .settingsGame{
     height: 100vh;

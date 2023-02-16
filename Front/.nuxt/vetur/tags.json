@@ -2,6 +2,18 @@
   "Message": {
     "description": "Auto imported from components/message.vue"
   },
+  "LobbyGradientBackground": {
+    "description": "Auto imported from components/lobby/GradientBackground.vue"
+  },
+  "LobbyHiddenWord": {
+    "description": "Auto imported from components/lobby/HiddenWord.vue"
+  },
+  "LobbyScoreTable": {
+    "description": "Auto imported from components/lobby/ScoreTable.vue"
+  },
+  "LobbySelectTeam": {
+    "description": "Auto imported from components/lobby/SelectTeam.vue"
+  },
   "SettingsGameMode": {
     "description": "Auto imported from components/settings-game/GameMode.vue"
   },

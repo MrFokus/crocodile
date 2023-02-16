@@ -68,6 +68,14 @@
     width: 65.12vw;
     height: 10vw;
     background-color: #D9D9D9;
+    border-radius: 10vw;
+    font-family: 'Arial Black',serif;
+    font-style: normal;
+    font-weight: 900;
+    font-size: 4vw;
+    padding-left:2vw ;
+    padding-right:2vw ;
+    box-sizing: border-box;
   }
   button{
     text-shadow: 0.5px 0.5px 0.5px #5B5B5B;
@@ -82,5 +90,6 @@
     text-align: center;
     color: #FFFFFF;
     text-decoration: none;
+    margin-top: 5vw;
   }
 </style>
