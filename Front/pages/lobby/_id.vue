@@ -1,5 +1,5 @@
 <template>
-  <HiddenWord/>
+  <SelectTeam/>
 </template>
 
 
@@ -8,10 +8,22 @@ import SelectTeam from "@/components/lobby/SelectTeam";
 import ScoreTable from "@/components/lobby/ScoreTable";
 import HiddenWord from "~/components/lobby/HiddenWord";
 export default {
+  data(){
+    return{
+      propsSelectTeam:{}
+    }
+  },
   components:{
     ScoreTable,
     SelectTeam,
     HiddenWord,
+  },
+  methods:{
+    // setPropsSelectTeam(){
+    //   this.propsSelectTeam=JSON.stringify( localStorage.getItem('UserSettings'))
+    // }
+  },
+  mounted() {
   }
 }
 </script>

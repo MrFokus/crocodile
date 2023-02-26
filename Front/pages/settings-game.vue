@@ -39,8 +39,8 @@ export default {
       this.difficulty=dif;
     },
     check(){
-      if(+this.teams>=10){
-        this.teams=10
+      if(+this.teams>=6){
+        this.teams=6
       }else if(+this.teams<0||this.teams==='0') {
         this.teams = 1
       }else if(!/^\d+$/.test(this.teams)){
@@ -66,9 +66,16 @@ export default {
         name:this.name.trim(),
         teams:this.teams,
         difficulty:this.difficulty,
+        isLeader: true,
+        team:'',
+        name_lobby:'',
       };
-      console.log(params)
-
+      if(localStorage.getItem("UserSettinds")){
+        localStorage.removeItem("UserSettings")
+      }
+      localStorage.setItem("UserSettings",JSON.stringify(params))
+      // console.log(JSON.parse(localStorage.UserSettings))
+      this.$router.push("/lobby");
     }
   }
 }

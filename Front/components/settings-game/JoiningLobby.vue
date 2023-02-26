@@ -2,10 +2,12 @@
   <div class="JoiningLobbyComponent">
     <div class="modal-joining-lobby">
       <p>Введите имя</p>
-      <input type="text">
+      <input v-model="name" type="text">
       <p>Введите номер лобби</p>
-      <input v-bind="lobbyId" type="text">
-      <button @click="" class="save">Сохранить</button>
+      <input v-model="lobbyId" type="text">
+      <p style="color: #D73512" v-if="error!==null">{{error}}</p>
+      <button @click="checkInput" class="join">Присоединиться</button>
+
     </div>
     <div @click="closeMD" class="close"></div>
   </div>
@@ -16,12 +18,36 @@
   export default {
     data(){
       return{
-        lobbyId:null,
+        lobbyId:'',
+        name:'',
+        error:null,
       }
     },
     methods:{
       closeMD(){
         this.$emit('closeModal')
+      },
+      checkInput(){
+        if(this.name===''||this.name===null){
+          this.error='Введите имя';
+
+        }else if(this.lobbyId===''||this.lobbyId===null){
+          this.error="Введите код комнаты";
+
+        }
+        else{
+          let params= {
+            name: this.name.trim(),
+            isLeader: false,
+            team:'',
+            teams:'',
+            name_lobby:this.lobbyId.trim(),
+          }
+          this.error=null;
+          localStorage.setItem("UserSettings",JSON.stringify(params))
+          console.log(JSON.parse(localStorage.UserSettings))
+          this.$router.push("/lobby/"+this.lobbyId);
+        }
       }
     }
   }
@@ -77,11 +103,11 @@
     padding-right:2vw ;
     box-sizing: border-box;
   }
-  button{
+  .join{
     text-shadow: 0.5px 0.5px 0.5px #5B5B5B;
-    width: 29vw;
+    min-width: 29vw;
     height: 12vw;
-    background: #009F10;
+    background-color: #009F10;
     border-radius: 50px;
     border: none;
     font-family: 'Arial Black',sans-serif;
@@ -91,5 +117,8 @@
     color: #FFFFFF;
     text-decoration: none;
     margin-top: 5vw;
+  }
+  .join:active{
+    background-color: #00720c;
   }
 </style>
