@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@types/socket.io": "^3.0.2",
+    "pg": "^8.10.0",
     "uuid": "^9.0.0",
     "ws": "^7.5.3"
   },

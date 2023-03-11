@@ -51,9 +51,9 @@ export default {
 </script>
 <style scoped>
   button{
-    width: 65.64vw;
-    height: 8.97vw;
-    border-radius: 10vw;
+    width: 256px;
+    height: 40px;
+    border-radius: 50px;
     border: none;
   }
   .btn-game-mode{
@@ -79,4 +79,15 @@ export default {
     background-color: #D9D9D9;
   }
 
+  @media only screen and (max-width: 390px) {
+    button{
+      width: 65.64vw;
+      height: 8.97vw;
+      border-radius: 10vw;
+    }
+    .btn-game-mode>button{
+      font-size: 5vw;
+      margin-top: 3vw;
+    }
+  }
 </style>

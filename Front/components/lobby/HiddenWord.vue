@@ -1,25 +1,34 @@
 <template>
   <main class="hidden-word">
-    <GradientBackground :player="player" class="background"/>
-    <div class="content">
-      <p class="player">Выступает игрок {{player.name}}</p>
-      <p class="round">Раунд {{'1/3'}}</p>
-      <p class="timer">{{"0:45"}}</p>
-      <div class="word">
-        <div v-if="isReady" class="word-content">
-            {{"Слово"}}
+    <GradientBackground :player="user" class="background"/>
+    <div class="background-content">
+      <div class="content">
+        <p class="player">Выступает игрок {{user.name}}</p>
+        <!--      <p class="round">Раунд {{'1/3'}}</p>-->
+        <p class="timer">{{time}}</p>
+        <div class="word">
+          <div v-if="isReady" class="word-content">
+            {{word}}
+          </div>
+          <button @click="Ready" class="ready" v-if="!isReady">Готов</button>
         </div>
-        <button @click="isReady=!isReady" class="ready" v-if="!isReady">Готов</button>
+        <button @click="GiveUp" class="give-up">Сдаюсь</button>
       </div>
-      <button class="give-up">Сдаюсь</button>
     </div>
+    <AnswerModal v-if="isAnswer" :word="word"/>
   </main>
 </template>
 <script>
 import GradientBackground from "~/components/lobby/GradientBackground";
+import AnswerModal from "@/components/lobby/AnswerModal";
 export default {
+  props:['word','connections'],
   data(){
     return{
+      isAnswer:false,
+      word:null,
+      time:null,
+      user:{},
       player:{
         team: "Blue",
         background:'',
@@ -28,7 +37,63 @@ export default {
       isReady: false,
     }
   },
-  components: {GradientBackground}
+  components: {GradientBackground,AnswerModal},
+  methods:{
+    getLocalStorage() { //получаем данные о игроке
+      this.user = JSON.parse(localStorage.getItem("UserSettings"))
+    },
+    ConnectionServer() {
+      console.log(this.connections)
+      this.connections.onmessage = (message) => { //получение данных с сервера
+        console.log(message)
+        let data=JSON.parse(message.data)
+
+        this[data.func](data)
+      }
+    },
+    GiveUp(){
+      this.connections.send(JSON.stringify({
+        method: "GiveUp",
+        name_lobby: this.$route.params.id,
+      }))
+      this.$emit("StartGame",'ScoreTable');
+    },
+    onRightAnswer(){
+      this.word='УГАДАНО';
+      this.isAnswer=true;
+      setTimeout(()=>{
+        this.isAnswer=false;
+        this.$emit("StartGame",'ScoreTable');
+      },3000)
+    },
+    onNoAnswer(){
+      this.word='НЕ УГАДАНО';
+      this.isAnswer=true;
+      setTimeout(()=>{
+        this.isAnswer=false;
+        this.$emit("StartGame",'ScoreTable');
+      },3000)
+
+    },
+    Ready(){
+      this.isReady=!this.isReady;
+      this.connections.send(JSON.stringify({
+          method: "Ready",
+          name_lobby: this.$route.params.id,
+      }))
+    },
+    onTimer(data){
+      this.time=data.time;
+    },
+  },
+  created() {
+    console.log(this.$route.params.id)
+    this.getLocalStorage();
+  },
+  mounted() {
+    console.log(this.$route.params.id)
+    this.ConnectionServer();
+  }
 }
 </script>
 
@@ -49,11 +114,11 @@ main{
   align-items: center;
 }
 .content{
-  width: 76.15vw;
+  width: 256px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin-top: 20vw;
+  margin-top: 80px;
 }
 .word{
   display: flex;
@@ -61,30 +126,41 @@ main{
   align-items: center;
   justify-content: center;
   width: 100%;
-  height: 75vw;
-  background-color: #D9D9D9;
-  border-radius: 6vw;
-  margin-top: 10vw;
+  height: 256px;
+  background: rgba(249, 249, 249, 0.53);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(12.5px);
+  border-radius: 16px;
+  margin-top: 20px;
+}
+.background-content{
+  background-color: rgba(101, 101, 101, 0.26);
+  width: 390px;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
 }
 button{
-  width: 70vw;
-  height: 15vw;
-  border-radius: 20vw;
+  width: 90%;
+  height: 50px;
+  border-radius: 50px;
   border: none;
-  margin-top: 30vw;
+  margin-top: 60px;
 }
 .give-up,.ready,.player,.round{
-  font-size: 5.12vw;
+  font-size: 16px;
   text-align: center;
 }
 .player{
-  margin-bottom: 3vw;
+  margin-bottom: 6px;
+  font-size: 20px;
 }
 .timer,.word-content{
-  font-size: 7.5vw;
+  font-size: 22px;
 }
 .timer{
-  margin-top: 10vw;
+  margin-top: 20px;
 }
 .ready{
   margin: 0;
@@ -96,5 +172,44 @@ button{
 }
 .give-up:active{
   background-color: #D9D9D9;
+}
+@media only screen and (max-width: 390px) {
+  .background{
+    width: 100vw;
+    height: 100vh;
+    z-index: -10;
+  }
+  .background-content{
+    width: 100vw;
+    background: none;
+  }
+  .content{
+    width: 76.15vw;
+    margin-top: 20vw;
+  }
+  .word{
+    width: 100%;
+    height: 75vw;
+    border-radius: 6vw;
+    margin-top: 10vw;
+  }
+  button{
+    width: 70vw;
+    height: 15vw;
+    border-radius: 20vw;
+    margin-top: 30vw;
+  }
+  .give-up,.ready,.player,.round{
+    font-size: 5.12vw;
+  }
+  .player{
+    margin-bottom: 3vw;
+  }
+  .timer,.word-content{
+    font-size: 7.5vw;
+  }
+  .timer{
+    margin-top: 10vw;
+  }
 }
 </style>

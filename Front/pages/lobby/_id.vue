@@ -1,5 +1,7 @@
 <template>
-  <SelectTeam/>
+  <SelectTeam :connections="connections" v-if="component==='SelectTeam'" @StartGame="StartGame" />
+  <ScoreTable :connections="connections" v-else-if="component==='ScoreTable'" @isHiddenWord="toHiddenWord"/>
+  <HiddenWord :connections="connections" :word="word" v-else-if="component==='HiddenWord'" @StartGame="StartGame" />
 </template>
 
 
@@ -10,7 +12,9 @@ import HiddenWord from "~/components/lobby/HiddenWord";
 export default {
   data(){
     return{
-      propsSelectTeam:{}
+      component:"",
+      connections:null,
+      word:null,
     }
   },
   components:{
@@ -22,73 +26,25 @@ export default {
     // setPropsSelectTeam(){
     //   this.propsSelectTeam=JSON.stringify( localStorage.getItem('UserSettings'))
     // }
+    toHiddenWord(word){
+      this.component='HiddenWord'
+      this.word= word;
+    },
+    StartGame(component){
+      this.component=component;
+    }
   },
   mounted() {
+    this.connections = new WebSocket("ws://localhost:8000")
+    this.connections.onopen= ()=> this.component = "SelectTeam"
+    console.log(this.connections)
   }
 }
 </script>
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!--<template>-->
-<!--  <main>-->
-<!--    <input type="text" v-model="name">-->
-<!--    <input type="text" v-model="msg">-->
-<!--    <button @click="SendMessage(name,msg)">Отправить</button>-->
-<!--    <div id="chat">-->
-<!--      <message v-for="(message,index) in messages" :key="index" :message="message"/>-->
-<!--    </div>-->
-<!--  </main>-->
-
-<!--</template>-->
-
-<!--<script>-->
-<!--import message from "@/components/message";-->
-
-<!--export default {-->
-<!--  data() {-->
-<!--    return {-->
-<!--      connection: null,-->
-<!--      name: null,-->
-<!--      msg: null,-->
-<!--      messages: [],-->
-<!--      message:null,-->
-<!--    }-->
-<!--  },-->
-<!--  beforeMount() {-->
-<!--      console.log("Start Connection to WS Server")-->
-<!--      this.connection = new WebSocket("ws://localhost:8000")-->
-<!--      this.getMessage();-->
-<!--  },-->
-<!--  methods: {-->
-<!--    getMessage() {-->
-<!--      this.connection.onmessage = (message) => { //получение данных с сервера-->
-<!--        this.messages = JSON.parse(message.data);-->
-<!--        console.log(this.connection)-->
-<!--      }-->
-<!--    },-->
-<!--    SendMessage(name, msg) {-->
-<!--        console.log(this.messages)-->
-<!--        this.connection.send(JSON.stringify({name, msg}))-->
-<!--        console.log(this.messages)-->
-<!--        this.connection.onmessage = (message) => { //получение данных с сервера-->
-<!--          this.messages.push( JSON.parse(message.data)[0]);-->
-<!--      }-->
-<!--    }-->
-<!--  }-->
-<!--}-->
-<!--</script>-->
+<style>
+body{
+  width: 100vw;
+  height: 100vh;
+}
+</style>

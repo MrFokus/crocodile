@@ -11,7 +11,7 @@
       <button>Правила игры</button>
       <button>Дополнительные настройки</button>
       <p class="name-lobby">{{ nameLobby }}</p>
-      <button v-if="user.isLeader===true" class="start">Начать</button>
+      <button v-if="user.isLeader===true" @click="toScoreTable()" class="start">Начать</button>
     </div>
   </main>
 </template>
@@ -19,29 +19,31 @@
 <script>
 const teams = [
   {style: {backgroundColor: '#A80000'}, code: 'red', players: 0},
-  {style: {backgroundColor: '#EAEF04'}, code: 'yellow', players: 0},
   {style: {backgroundColor: '#0053D0'}, code: 'blue', players: 0},
   {style: {backgroundColor: '#00D622'}, code: 'green', players: 0},
+  {style: {backgroundColor: '#EAEF04'}, code: 'yellow', players: 0},
   {style: {backgroundColor: '#AB3E00'}, code: 'brown', players: 0},
   {style: {backgroundColor: '#390081'}, code: 'purple', players: 0},
 ]
 const SelectTeams = [
   {background: 'linear-gradient(222.58deg, #A80000 -6.68%, #E3E3E3 124.75%)', border: ' 3px solid #FFFFFF'},
-  {background: 'linear-gradient(225.24deg, #D6DA05 0%, #E9E9E5 102.14%)', border: ' 3px solid #FFFFFF'},
   {background: 'linear-gradient(226.34deg, #0053D0 2.15%, #D8D8D8 102.84%)', border: ' 3px solid #FFFFFF'},
   {background: 'linear-gradient(225.87deg, #00D622 0%, #D9D9D9 98.53%)', border: ' 3px solid #FFFFFF'},
+  {background: 'linear-gradient(225.24deg, #D6DA05 0%, #E9E9E5 102.14%)', border: ' 3px solid #FFFFFF'},
   {background: 'linear-gradient(225deg, #AB3E00 0%, #D8C6BD 105.13%)', border: ' 3px solid #FFFFFF'},
   {background: ' linear-gradient(225.12deg, #390081 0%, #B0A0C6 104.06%)', border: ' 3px solid #FFFFFF'},
 ]
 export default {
+  props:['connections'],
   data() {
     return {
       user: {},
       teams,
       nameLobby: '',
-      connections: null,
+      // connections: null,
       old_team: '',
       new_team: '',
+      startGame: false,
     }
   },
   methods: {
@@ -61,9 +63,19 @@ export default {
         let ls_user = JSON.parse(localStorage.getItem("UserSettings"))
         ls_user.team = this.new_team //меняем в сторе команду игрока
         localStorage.setItem("UserSettings", JSON.stringify(ls_user))
+        console.log(JSON.parse( localStorage.UserSettings))
       }
     },
-
+    toScoreTable(){
+      this.connections.send(JSON.stringify({
+        method: 'StartGame',
+        name_lobby: this.nameLobby,
+      }))
+    },
+    StartGame(){
+      console.log(",jkjgkgkjgk")
+      this.$emit('StartGame', 'ScoreTable')
+    },
     Route() { //функция, которая переадресует игрока в комнату (просто у url появляется код комнаты)
       if (this.$route.params.id === undefined) {
         this.connections.send(JSON.stringify({
@@ -81,6 +93,9 @@ export default {
           id_room: this.$route.params.id,
           name: this.user.name,
         }))
+        let ls_user = JSON.parse(localStorage.getItem("UserSettings"))
+        ls_user.name_lobby = this.nameLobby
+        localStorage.setItem("UserSettings", JSON.stringify(ls_user))
       }
     },
     onRoute(data) {
@@ -88,15 +103,15 @@ export default {
       this.$router.push('/lobby/' + data.rs)
     },
     onRecoveryTeam(data) {
-      if(data==="noLobby"){
+      if(data.players_teams==="noLobby"){
         this.$router.push('/settings-game/')
       }
       console.log("dfhs")
-      this.user.teams = Object.keys(data).length
-      console.log(Object.keys(data).length)
+      this.user.teams = Object.keys(data.players_teams).length
+      console.log(Object.keys(data.players_teams).length)
       for (let i = 0; i < this.user.teams; i++) {
-        if (data[this.teams[i].code] !== undefined) {
-          this.teams[i].players = data[this.teams[i].code];
+        if (data.players_teams[this.teams[i].code] !== undefined) {
+          this.teams[i].players = data.players_teams[this.teams[i].code];
         }
       }
       this.teams = JSON.parse(JSON.stringify(teams))
@@ -108,10 +123,10 @@ export default {
 
     },
     onJoinTeam(data){
-      console.log(data)
+      console.log(data.r)
       for (let i = 0; i < this.user.teams; i++) {
-        if (data[this.teams[i].code] !== undefined) {
-          this.teams[i].players = data[this.teams[i].code];
+        if (data.r[this.teams[i].code] !== undefined) {
+          this.teams[i].players = data.r[this.teams[i].code];
         }
       }
     },
@@ -120,31 +135,18 @@ export default {
       this.user = JSON.parse(localStorage.getItem("UserSettings"))
     },
     ConnectionServer() {
-      this.connections = new WebSocket("ws://localhost:8000")
+      console.log(this.connections)
       this.connections.onmessage = (message) => { //получение данных с сервера
         let data=JSON.parse(message.data)
-        //JSON.parse(message.data['func'](JSON.parse(message.data)))
-        switch (data.func) {
-          case "onRoute":
-            console.log("onRoute")
-            this.onRoute(data)
-            break
-          case "onRecoveryTeam":
-            console.log("onRecoveryTeam")
-            this.onRecoveryTeam(data.players_teams)
-            break
-          case "onJoinTeam":
-            console.log("onJoinTeam")
-            this.onJoinTeam(data.r);
-            break
-        }
+        this[data.func](data)
       }
     }
   },
   mounted() {
     this.getLocalStorage();
     this.ConnectionServer();
-    this.connections.onopen = () => this.Route();
+    this.Route();
+    // this.connections.onopen = () => this.Route();
 
 
   },
@@ -159,7 +161,7 @@ body {
 <style scoped>
 
 .teams {
-  width: 70vw;
+  width: 100%;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   margin: auto;
@@ -167,30 +169,35 @@ body {
 
 .team {
   margin: auto;
-  width: 30vw;
-  height: 30vw;
-  margin-bottom: 3vw;
+  width: 117px;
+  height: 117px;
+  margin-bottom: 6px;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  border-radius: 3vw;
+  border-radius: 10px;
 }
 
+
 .selectTeam {
+  background-color: #1E1E1E;
   margin: auto;
-  width: 100vw;
+  width: 390px;
   height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 button {
-  width: 65.12vw;
-  height: 8vw;
-  border-radius: 20vw;
+  width: 256px;
+  height: 35px;
+  border-radius: 50px;
   border: none;
-  font-size: 3.5vw;
+  font-size: 12px;
   font-family: 'Arial Black', sans-serif;
   padding: 0;
-  margin-bottom: 3vw;
+  margin-bottom: 6px;
 }
 
 .content {
@@ -198,19 +205,21 @@ button {
   flex-direction: column;
   align-items: center;
   margin-top: 10vw;
+  width: 258px;
 
 }
 
 .number-of-players {
   text-align: center;
-  font-size: 16.41vw;
+  font-size: 64px;
   font-family: 'Arial Black', sans-serif;
   color: white;
   -webkit-text-stroke: .03em black;
 }
 
 h1 {
-  font-size: 6.5vw;
+  font-size: 24px;
+  margin-bottom: 10px;
 }
 
 p, h1 {
@@ -219,16 +228,68 @@ p, h1 {
 }
 
 .name-lobby {
-  font-size: 12.3vw;
+  font-size: 48px;
 }
 
 .start {
-  height: 15vw;
+  height: 61px;
   background-color: #009F10;
   color: #FFFFFF;
   text-align: center;
-  font-size: 5vw;
+  font-size: 24px;
   font-family: 'Arial Black', sans-serif;
   -webkit-text-stroke: .03em #3b3b3b;
+}
+@media only screen and (max-width: 390px) {
+
+
+  .teams {
+    width: 70vw;
+  }
+
+  .team {
+    width: 30vw;
+    height: 30vw;
+    margin-bottom: 3vw;
+    border-radius: 3vw;
+  }
+
+
+  .selectTeam {
+    width: 100vw;
+    height: 100vh;
+  }
+
+  button {
+    width: 65.12vw;
+    height: 8vw;
+    border-radius: 20vw;
+    font-size: 3.5vw;
+    margin-bottom: 3vw;
+  }
+
+  .content {
+    margin-top: 10vw;
+
+  }
+  .number-of-players {
+    font-size: 16.41vw;
+    -webkit-text-stroke: .03em black;
+  }
+
+  h1 {
+    font-size: 6vw;
+    margin-bottom: 4vw;
+  }
+
+  .name-lobby {
+    font-size: 12.3vw;
+  }
+
+  .start {
+    height: 15vw;
+    font-size: 5vw;
+    -webkit-text-stroke: .03em #3b3b3b;
+  }
 }
 </style>

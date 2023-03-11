@@ -18,20 +18,24 @@ export default {
   padding: 0;
 }
 body{
-  background: #1E1E1E;
+  background: #5a5a5a;
 }
 </style>
 <style scoped>
 
 main{
+  background-color: #1E1E1E;
+  height: 100vh;
+  width: 390px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
 }
 .description{
-  width: 65.128vw;
-  margin-top: 23.589vw;
-  margin-bottom: 34.358vw;
+  width: 256px;
+  margin-top: 92px;
+  margin-bottom: 134px;
 
 }
 .StartGame:active{
@@ -49,8 +53,8 @@ main{
   text-decoration: none;
 
   text-shadow: 0.5px 0.5px 0.5px #5B5B5B;
-  width: 65.128vw;
-  height: 15.64vw;
+  width: 256px;
+  height: 61px;
   background: #009F10;
   border-radius: 50px;
   border: none;
@@ -63,11 +67,33 @@ main{
   font-style: normal;
   font-weight: 900;
   font-size: 20px;
-  line-height: 28px;
   display: flex;
   align-items: center;
 
   color: #FFFFFF;
 }
+@media only screen and (max-width: 390px) {
+  main{
+    width: 100vw;
+  }
+  .description{
+    width: 65.128vw;
+    margin-top: 23.589vw;
+    margin-bottom: 34.358vw;
 
+  }
+  .StartGame{
+    font-weight: 900;
+    font-size: 6vw;
+
+    text-shadow: 0.5px 0.5px 0.5px #5B5B5B;
+    width: 65.128vw;
+    height: 15.64vw;
+    border-radius: 50px;
+  }
+  .description>p{
+    font-weight: 900;
+    font-size: 6vw;
+  }
+}
 </style>
