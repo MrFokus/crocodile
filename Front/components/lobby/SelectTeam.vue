@@ -72,12 +72,18 @@ export default {
         name_lobby: this.nameLobby,
       }))
     },
-    StartGame(){
+    StartGame(data){
       console.log(",jkjgkgkjgk")
       this.$emit('StartGame', 'ScoreTable')
+      localStorage.setItem("StatusGame",data.status_game)
     },
     Route() { //функция, которая переадресует игрока в комнату (просто у url появляется код комнаты)
       if (this.$route.params.id === undefined) {
+        console.log(localStorage.getItem('StatusGame'))
+        if(localStorage.getItem('StatusGame')==='connected'||localStorage.getItem('StatusGame')==='in_process'){
+          this.$router.push("/settings-game/")
+          return
+        }
         this.connections.send(JSON.stringify({
           method: 'createLobby',
           name: this.user.name,
@@ -87,6 +93,7 @@ export default {
 
       } else {
         this.nameLobby = this.$route.params.id;
+        localStorage.setItem("StatusGame", 'connected')
         console.log(this.$route.params.id)
         this.connections.send(JSON.stringify({ //при входе получаем данные с сервера о командах
           method: "recoveryTeam",
@@ -143,6 +150,10 @@ export default {
     }
   },
   mounted() {
+    if(localStorage.getItem('StatusGame')==='in_process'){
+      this.$emit('StartGame', 'ScoreTable')
+      return
+    }
     this.getLocalStorage();
     this.ConnectionServer();
     this.Route();

@@ -7,10 +7,10 @@
         <!--      <p class="round">Раунд {{'1/3'}}</p>-->
         <p class="timer">{{time}}</p>
         <div class="word">
-          <div v-if="isReady" class="word-content">
+          <div v-if="time!==null" class="word-content">
             {{word}}
           </div>
-          <button @click="Ready" class="ready" v-if="!isReady">Готов</button>
+          <button @click="Ready" class="ready" v-if="isReady===false&&time===null">Готов</button>
         </div>
         <button @click="GiveUp" class="give-up">Сдаюсь</button>
       </div>
@@ -26,7 +26,6 @@ export default {
   data(){
     return{
       isAnswer:false,
-      word:null,
       time:null,
       user:{},
       player:{
@@ -56,7 +55,10 @@ export default {
         method: "GiveUp",
         name_lobby: this.$route.params.id,
       }))
-      this.$emit("StartGame",'ScoreTable');
+      setTimeout(()=>{
+        this.$emit("StartGame",'ScoreTable');
+      },4000)
+
     },
     onRightAnswer(){
       this.word='УГАДАНО';
@@ -64,7 +66,7 @@ export default {
       setTimeout(()=>{
         this.isAnswer=false;
         this.$emit("StartGame",'ScoreTable');
-      },3000)
+      },4000)
     },
     onNoAnswer(){
       this.word='НЕ УГАДАНО';
@@ -72,10 +74,11 @@ export default {
       setTimeout(()=>{
         this.isAnswer=false;
         this.$emit("StartGame",'ScoreTable');
-      },3000)
+      },4000)
 
     },
     Ready(){
+      debugger
       this.isReady=!this.isReady;
       this.connections.send(JSON.stringify({
           method: "Ready",
@@ -85,12 +88,19 @@ export default {
     onTimer(data){
       this.time=data.time;
     },
+    // Answer(data) {
+    //   this.word=data.word
+    // },
+    EndGame() {
+      this.$emit("StartGame",'ScoreTable');
+    }
   },
   created() {
     console.log(this.$route.params.id)
     this.getLocalStorage();
   },
   mounted() {
+
     console.log(this.$route.params.id)
     this.ConnectionServer();
   }

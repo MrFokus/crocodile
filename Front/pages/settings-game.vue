@@ -70,12 +70,20 @@ export default {
         team:'',
         name_lobby:'',
       };
-      if(localStorage.getItem("UserSettinds")){
-        localStorage.removeItem("UserSettings")
-      }
+
       localStorage.setItem("UserSettings",JSON.stringify(params))
+      console.log(localStorage.getItem("StatusGame"),"SG")
       // console.log(JSON.parse(localStorage.UserSettings))
       this.$router.push("/lobby");
+    }
+  },
+  mounted() {
+    this.difficulty=null;
+    if(localStorage.getItem("UserSettings")){
+      localStorage.removeItem("UserSettings")
+    }
+    if(localStorage.getItem("StatusGame")){
+      localStorage.removeItem("StatusGame")
     }
   }
 }

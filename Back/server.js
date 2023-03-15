@@ -63,6 +63,7 @@ const createLobby = (name, total_round = 3, difficulty) => {
                 index_game_player: 0,
                 teams: {},
                 all_word: [],
+                speaker: null,
             }
             for (let i = 0; i < total_round; i++) {
                 rooms[rs]['teams'][colorTeams[i]] = {
@@ -126,34 +127,26 @@ const getWord = async (lobby) => {
     })
     console.log(res)
     console.log(rooms[lobby].all_word);
-    //     .then(r => r.forEach(val=>{
-    //     rooms[lobby].all_word.push(val.word)
-    // }))
 
 }
 
 const Game = (lobby) => {
 
-    // if(rooms[lobby].team_game===Object.keys( rooms[lobby].teams).length&& rooms[lobby].index_game_player===Object.keys(rooms[lobby].teams[colorTeams[rooms[lobby].team_game]].players).length){
-    //     rooms[lobby].index_game_player=0;
-    //     rooms[lobby].team_game=0;
-    //     Game(lobby)
-    // }
-    //
     if (Object.keys(rooms[lobby].teams[colorTeams[rooms[lobby].team_game]].players).length === 0 || rooms[lobby].index_game_player === Object.keys(rooms[lobby].teams[colorTeams[rooms[lobby].team_game]].players).length || (rooms[lobby].team_game === (Object.keys(rooms[lobby].teams).length) - 1 && rooms[lobby].index_game_player === Object.keys(rooms[lobby].teams[colorTeams[rooms[lobby].team_game]].players).length)) {
         if (rooms[lobby].round === Object.keys(rooms[lobby].all_players).length * rooms[lobby].total_round) {
-            setTimeout(()=>{
-                for (let key in rooms[lobby].all_players) {
-                    rooms[lobby].all_players[key].send(JSON.stringify({
-                        func: 'EndGame',
-                        status_game:'end',
-                    }))
+            for (let key in rooms[lobby].all_players) {
+                rooms[lobby].all_players[key].send(JSON.stringify({
+                    func: 'EndGame',
+                    status_game: 'end',
+                }))
 
-                }
-                rooms[lobby].game = "end";
+            }
+            rooms[lobby].game = "end";
+            setTimeout(() => {
+
                 delete rooms[lobby]
-                console.log(rooms,"end")
-            },3000)
+                console.log(rooms, "end")
+            }, 3000)
 
             return;
         }
@@ -167,59 +160,14 @@ const Game = (lobby) => {
         Game(lobby)
     } else {
         rooms[lobby].word = rooms[lobby].all_word[rooms[lobby].round];
-        rooms[lobby].all_players[Object.keys(rooms[lobby].teams[colorTeams[rooms[lobby].team_game]].players)[rooms[lobby].index_game_player]].send(JSON.stringify({
+        rooms[lobby].speaker =Object.keys(rooms[lobby].teams[colorTeams[rooms[lobby].team_game]].players)[rooms[lobby].index_game_player]
+        rooms[lobby].all_players[rooms[lobby].speaker].send(JSON.stringify({
             word: rooms[lobby].word.toUpperCase(),
             func: 'onHiddenWord',
         }));
         rooms[lobby].round++;
         rooms[lobby].index_game_player++;
     }
-
-
-    // if ((Object.keys(rooms[lobby].teams[colorTeams[rooms[lobby].team_game]].players).length !== 0)&&!((rooms[lobby].index_game_player===(Object.keys(rooms[lobby].teams[colorTeams[rooms[lobby].team_game]].players).length))&&(rooms[lobby].team_game===(Object.keys( rooms[lobby].teams).length)-1))) {
-    //     // }//Если команда не пустая или индекс игрока не привышает размер массива игроков
-    //     rooms[lobby].word=rooms[lobby].all_word[rooms[lobby].round];
-    //     rooms[lobby].all_players[Object.keys(rooms[lobby].teams[colorTeams[rooms[lobby].team_game]].players)[rooms[lobby].index_game_player]].send(JSON.stringify({
-    //         word: rooms[lobby].word.toUpperCase(),
-    //         func: 'onHiddenWord',
-    //     }));
-    //     rooms[lobby].round++;
-    //     rooms[lobby].index_game_player++;
-    // }
-    // else {
-    //     if(rooms[lobby].team_game===(Object.keys( rooms[lobby].teams).length)-1){
-    //         rooms[lobby].index_game_player=0;
-    //         rooms[lobby].team_game=0;
-    //     }
-    //     else {
-    //         rooms[lobby].index_game_player = 0;
-    //         rooms[lobby].team_game++;
-    //     }
-    //     Game(lobby)
-    // }
-
-
-    //
-    //
-    // if(rooms[lobby].index_game_player!==Object.keys(rooms[lobby].teams[colorTeams[rooms[lobby].team_game]].players).length|| Object.keys(rooms[lobby].teams[colorTeams[rooms[lobby].team_game]].players).length!==0){
-    //     rooms[lobby].round++;
-    //     rooms[lobby].word=rooms[lobby].all_word[rooms[lobby].round];
-    //     rooms[lobby].index_game_player++;
-    //     console.log(rooms[lobby].word);
-    //     rooms[lobby].all_players[Object.keys( rooms[lobby].teams[colorTeams[rooms[lobby].team_game]].players)[rooms[lobby].index_game_player-1]].send(JSON.stringify({
-    //         word: rooms[lobby].word.toUpperCase(),
-    //         func: 'onHiddenWord',
-    //     }));
-    // }
-    // else{
-    //     if(rooms[lobby].team_game===Object.keys( rooms[lobby].teams).length){
-    //         rooms[lobby].team_game=0
-    //     }
-    //     rooms[lobby].team_game++;
-    //     rooms[lobby].index_game_player=0
-    //     Game(lobby)
-    // }
-
 
 }
 
@@ -254,7 +202,7 @@ const timer = (lobby) => {
     if (rooms[lobby].pause === false) {
         let timerId = setInterval(() => {
             let res = new Date(rooms[lobby].timer * 1000).toISOString().substring(14, 19)
-            if(rooms[lobby].pause===true){
+            if (rooms[lobby].pause === true) {
                 clearInterval(timerId);
                 return 0;
             }
@@ -267,9 +215,9 @@ const timer = (lobby) => {
                     }))
                 }
                 clearInterval(timerId);
-                setTimeout(()=>{
+                setTimeout(() => {
                     Game(lobby)
-                },4000)
+                }, 4000)
 
                 return 0;
 
@@ -322,7 +270,7 @@ wss.on("connection", (ws) => { //создаём событие подключе�
     //clients[id].send(JSON.stringify(messages)) //для только что подключившихся пользователй посылаем историю сообщений
     ws.on('message', (rawMessage) => { //создвём метод message но не понятно, как обращаться к другим методам, наверное никак
         const content = JSON.parse(rawMessage)//данные с клиента преобразуем в объект
-
+        console.log(content.method+ '\n')
         // console.log(content)
         switch (content.method) {
             case 'createLobby':
@@ -330,7 +278,7 @@ wss.on("connection", (ws) => { //создаём событие подключе�
                     clients[id].send(JSON.stringify(createLobby(content.name, content.total_round, content.difficulty)));
                     break
                 } catch (e) {
-                    console.log("Error in CreateLobby", e)
+                    console.log("Проблемы в создании комнаты", e)
                     break;
                 }
             case 'JoinTeam':
@@ -343,7 +291,7 @@ wss.on("connection", (ws) => { //создаём событие подключе�
                     }
                     break;
                 } catch (e) {
-                    console.log("Error in JoinTeam", e)
+                    console.log(`Проблемы в добавлении игрока ${content.user} в команду ${content.new_team}`, e)
                     break;
                 }
 
@@ -372,7 +320,7 @@ wss.on("connection", (ws) => { //создаём событие подключе�
                     }
                     break
                 } catch (e) {
-                    console.log("Error in recovery teams", e)
+                    console.log(`Проблемы в восстановлении данных о комнате при перезагрузке страницы`, e)
                     break;
                 }
             case 'StartGame':
@@ -384,7 +332,7 @@ wss.on("connection", (ws) => { //создаём событие подключе�
                         for (let key in rooms[content.name_lobby].all_players) {
                             rooms[content.name_lobby].all_players[key].send(JSON.stringify({
                                 func: "StartGame",
-                                status_game:'in_process',
+                                status_game: 'in_process',
                             }))
                         }
                         await Game(content.name_lobby);
@@ -394,58 +342,69 @@ wss.on("connection", (ws) => { //создаём событие подключе�
                     SG();
                     break;
                 } catch (e) {
-                    console.log("Error in start game", e)
+                    console.log(`Проблемы в запуске игры`, e)
                     break;
                 }
             case 'ScoreTable': {
                 try {
-                    for (let key in rooms[content.name_lobby].all_players) {
-                        rooms[content.name_lobby].all_players[key].send(JSON.stringify(ScoreTable(content.name_lobby)))
+                    rooms[content.name_lobby].all_players[content.name] = ws
+                    rooms[content.name_lobby].all_players[content.name].send(JSON.stringify(ScoreTable(content.name_lobby)))
+                    if(rooms[content.name_lobby].speaker===content.name&&rooms[content.name_lobby].speaker!==null&& rooms[content.name_lobby].game!=='end') {
+                        rooms[content.name_lobby].all_players[rooms[content.name_lobby].speaker].send(JSON.stringify({
+                            word: rooms[lobby].word.toUpperCase(),
+                            func: 'onHiddenWord',
+                        }));
+                    }
+                    if(rooms[content.name_lobby].game==='end'){
+                            rooms[content.name_lobby].all_players[content.name].send(JSON.stringify({
+                                func: 'EndGame',
+                                status_game: 'end',
+                            }))
                     }
                     break;
                 } catch (e) {
-                    console.log('Score table', e)
+                    console.log(`Проблемы в восстановление счёта команд при перезагрузке страницы`, e)
                     break;
                 }
             }
             case 'Ready': {
                 try {
-                    rooms[content.name_lobby].timer=10
+                    rooms[content.name_lobby].timer = 10
                     rooms[content.name_lobby].pause = false;
                     timer(content.name_lobby);
                     for (let key in rooms[content.name_lobby].all_players) {
                         rooms[content.name_lobby].all_players[key].send(JSON.stringify({
+                            word: rooms[lobby].word.toUpperCase(),
                             func: "Answer",
                         }))
                     }
                     break;
                 } catch (e) {
-                    console.log('Score table', e)
+                    console.log(`Проблемы в запуске отсчёта и отправке загаданного слова`, e)
                     break;
                 }
             }
             case 'GiveUp': {
                 try {
-                    for (let key in rooms[lobby].all_players) {
-                        rooms[lobby].all_players[key].send(JSON.stringify({
+                    rooms[content.name_lobby].pause = true;
+                    for (let key in rooms[content.name_lobby].all_players) {
+                        rooms[content.name_lobby].all_players[key].send(JSON.stringify({
                             func: "onNoAnswer",
                             word: rooms[lobby].word,
                         }))
                     }
-                        rooms[content.name_lobby].timer = 0;
-                        setTimeout(()=>{
-                            Game(content.name_lobby);
-                        },4000)
+                    rooms[content.name_lobby].timer = 0;
+                    Game(content.name_lobby);
 
                     break;
                 } catch (e) {
-                    console.log('Score table', e)
+                    console.log(`Проблемы в попытке сдаться`, e)
                     break;
                 }
             }
             case 'Answer': {
                 try {
-                    if(content.word===rooms[content.name_lobby].word){
+                    if (content.word === rooms[content.name_lobby].word) {
                         rooms[content.name_lobby].teams[content.team].score++;
                         for (let key in rooms[content.name_lobby].all_players) {
                             rooms[content.name_lobby].all_players[key].send(JSON.stringify({
@@ -454,18 +413,18 @@ wss.on("connection", (ws) => { //создаём событие подключе�
                                 score_table: ScoreTable(content.name_lobby).score_table
                             }))
                         }
-                        rooms[content.name_lobby].pause=true;
+                        rooms[content.name_lobby].pause = true;
                         rooms[content.name_lobby].timer = 0;
-                        setTimeout(()=>{
+                        setTimeout(() => {
                             Game(content.name_lobby);
-                        },4000)
+                        }, 3000)
 
 
                     }
                     break;
 
                 } catch (e) {
-                    console.log('Score table', e)
+                    console.log(`Проблемы в попытке дать ответ`, e)
                     break;
                 }
             }
@@ -473,9 +432,9 @@ wss.on("connection", (ws) => { //создаём событие подключе�
     })
     ws.on("close", () => { //событие выхода из чата
         try {
-            console.log(`Client is closed ` + userName + ` in room ` + lobby)
-            delete rooms[lobby].all_players[userName]
-        } catch (e){
+            console.log(`Client is closed ` + userName + ` in room ` + lobby+'\n')
+            // delete rooms[lobby].all_players[userName]
+        } catch (e) {
             console.log(e)
         }
 

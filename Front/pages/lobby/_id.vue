@@ -12,9 +12,9 @@ import HiddenWord from "~/components/lobby/HiddenWord";
 export default {
   data(){
     return{
+      word:null,
       component:"",
       connections:null,
-      word:null,
     }
   },
   components:{
@@ -27,8 +27,8 @@ export default {
     //   this.propsSelectTeam=JSON.stringify( localStorage.getItem('UserSettings'))
     // }
     toHiddenWord(word){
+      this.word=word;
       this.component='HiddenWord'
-      this.word= word;
     },
     StartGame(component){
       this.component=component;

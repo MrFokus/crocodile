@@ -16,7 +16,7 @@
         <div class="timer center">{{ time }}</div>
         <div class="answer-block">
           <input :disabled="disabled" v-model="answer" placeholder="Введите ответ" class="answer" type="text">
-          <button @click="SendAnswer" class="send">Отправить</button>
+          <button :disabled="disabled" @click="SendAnswer" class="send">Отправить</button>
         </div>
 
       </div>
@@ -94,7 +94,7 @@ export default {
       this.sortScore();
     },
     onHiddenWord(data) {
-      this.$emit("isHiddenWord", data.word);
+      this.$emit("isHiddenWord",data.word);
     },
     onRightAnswer(data){
       this.word=data.word.toUpperCase();
@@ -119,6 +119,9 @@ export default {
       this.isAnswer=true;
       this.word=this.score[0].team;
       this.title="Игра окончена"
+      setTimeout(()=>{
+        this.$router.push('/settings-game/')
+      },10000)
     },
     Answer(data) {
       this.disabled = null;
@@ -127,6 +130,7 @@ export default {
       this.connections.send(JSON.stringify({ //при входе получаем данные с сервера о командах
         method: "ScoreTable",
         name_lobby: this.$route.params.id,
+        name: this.user.name
       }))
     },
     onNoAnswer(data){
@@ -143,7 +147,7 @@ export default {
     SendAnswer() {
       this.connections.send(JSON.stringify({
         method: "Answer",
-        word: this.answer,
+        word: this.answer.trim().toLowerCase(),
         name_lobby: this.$route.params.id,
         user: this.user.name,
         team: this.user.team,
@@ -169,14 +173,14 @@ export default {
     // }
   },
   created() {
-    this.sortScore();
     this.getLocalStorage();
     // this.Background();
   },
 
   mounted() {
-
+    console.log("before")
     this.ConnectionServer();
+    console.log("after")
     this.ScoreTable();
 
   },
